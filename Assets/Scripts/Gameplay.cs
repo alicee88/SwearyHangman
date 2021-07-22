@@ -23,7 +23,6 @@ public class Gameplay : MonoBehaviour
 
     string[] swearwords = { "TWATWAFFLE", "THUNDERCUNT", "FUCKTRUMPET", "DICKSNEEZE", "CHUCKLEFUCK", "COCKWEASEL", "CUNTNUGGET", "PISSFLAPS"};
 
-    // Start is called before the first frame update
     void Start()
     {
 
@@ -32,7 +31,6 @@ public class Gameplay : MonoBehaviour
         SetupGuess();
     }
 
-    // Update is called once per frame
     void Update()
     {
         for (KeyCode key = KeyCode.A; key <= KeyCode.Z; key++)
@@ -79,21 +77,23 @@ public class Gameplay : MonoBehaviour
         guessText.text = currentGuess;
     }
 
-    void UpdateGuess(KeyCode keycode)
+    bool GuessedCorrectLetter(char key)
     {
-        bool wrongGuess = true;
-        char charKey = (char)(keycode);
-
         foreach (var letter in answerList)
         {
-            if(letter == charKey)
+            if (letter == key)
             {
                 // Correct guess
-                wrongGuess = false;
+                return true;
             }
         }
+        return false;
+    }
+    void UpdateGuess(KeyCode keycode)
+    {
+        char charKey = (char)(keycode);
 
-        if (!wrongGuess)
+        if (GuessedCorrectLetter(charKey))
         {
             for (int i = 0; i < answerList.Count; i++)
             {
@@ -102,13 +102,6 @@ public class Gameplay : MonoBehaviour
                     guessList[i] = charKey;
                     answerList[i] = '_';
                 }
-            }
-            
-            string checkAnswer = new string(guessList.ToArray());
-            if (checkAnswer.Equals(answer))
-            {
-                coroutine = WaitForEndScene(1.5f, WINSCENE);
-                StartCoroutine(coroutine);
             }
         }
         else
@@ -123,16 +116,29 @@ public class Gameplay : MonoBehaviour
             }
             // Wrong guess
             hangmanStage++;
-            if (hangmanStage == lastHangman)
-            {
-                coroutine = WaitForEndScene(1.5f, LOSESCENE);
-                StartCoroutine(coroutine);
-            }
-           
             currentHangman.sprite = hangmanStages[hangmanStage];
         }
         
         RenderGuess();
+        CheckForEndCondition();
+    }
+
+    void CheckForEndCondition()
+    {
+        // Have we won?
+        string checkAnswer = new string(guessList.ToArray());
+        if (checkAnswer.Equals(answer))
+        {
+            coroutine = WaitForEndScene(1.5f, WINSCENE);
+            StartCoroutine(coroutine);
+        }
+
+        // Have we lost?
+        if (hangmanStage == lastHangman)
+        {
+            coroutine = WaitForEndScene(1.5f, LOSESCENE);
+            StartCoroutine(coroutine);
+        }
     }
 
     IEnumerator WaitForEndScene(float waitTime, int scene)
