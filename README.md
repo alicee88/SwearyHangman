@@ -1,2 +1,2 @@
-# Hangman
+# Sweary Hangman
  Hangman in Unity
